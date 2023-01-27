@@ -2,17 +2,33 @@ import shlex
 import numpy as np
 
 class CodexSample:
+    """Class representing a single CODEX sample."""
     cells_by_phenotype : dict[str,list[tuple[int, int]]] #TODO: maybe create a Cell type and store a list of these instead?
     def __init__(self) -> None:
         self.cells_by_phenotype = dict()
 
-    def add_cell(self, xx, yy, phenotype):
-        if phenotype not in self.cells_by_phenotype.keys():
-            self.cells_by_phenotype[phenotype] = []
-        self.cells_by_phenotype[phenotype].append((xx, yy))
+    def add_cell(self, cell_x: int, cell_y: int, phenotype: str):
+        """Adds a cell with the given phenotype to the sample.
 
-    def get_cells(self, phenotype):
-        if phenotype in self.cells_by_phenotype.keys():
+        Args:
+            cell_x (int): X coordinate of the cell to add
+            cell_y (int): Y coordinate of the cell to add
+            phenotype (str): _description_
+        """
+        if phenotype not in self.cells_by_phenotype:
+            self.cells_by_phenotype[phenotype] = []
+        self.cells_by_phenotype[phenotype].append((cell_x, cell_y))
+
+    def get_cells(self, phenotype: str):
+        """Returns a list of cells of the given phenotype in this sample, or an empty list if there are none.
+
+        Args:
+            phenotype (str): The phenotype to return.
+
+        Returns:
+            tuple[list[int], list[int]]: The list of x- and y-coordinates of the cells of the given phenotype in this sample. Empty if no such cells exist.
+        """
+        if phenotype in self.cells_by_phenotype:
             cells = self.cells_by_phenotype[phenotype]
             xs = [pair[0] for pair in cells]
             ys = [pair[1] for pair in cells]
@@ -21,6 +37,17 @@ class CodexSample:
             return [], []
 
     def get_subsample(self, x: int, y: int, width: int, height: int):
+        """Returns a rectangular subsample of this sample.
+
+        Args:
+            x (int): The x-coordinate of the upper-left corner of the subsample
+            y (int): The y-coordinate of the upper-left corner of the subsample
+            width (int): The width of the subsample
+            height (int): The height of the subsample
+
+        Returns:
+            CodexSample: A sample consisting only of the cells in the region specified.
+        """
         subsample = CodexSample()
         for phenotype, cell_list in self.cells_by_phenotype.items():
             for cell_x, cell_y in cell_list:
@@ -35,13 +62,22 @@ class CodexSample:
         return sorted(self.cells_by_phenotype.keys(), key=self.get_num_cells, reverse=True)
 
 class CodexData:
+    """Class providing access to a set of CODEX samples."""
     known_phenotypes : list[str]
     samples : dict[str, CodexSample]
     def __init__(self) -> None:
         self.samples = dict()
         self.known_phenotypes = []
 
-    def add_cell(self, sample, xx, yy, phenotype, xtile=None, ytile=None):
+    def add_cell(self, sample, xx, yy, phenotype):
+        """Adds a cell to a sample. Creates a new sample if one does not already exist with the given name.
+
+        Args:
+            sample (_type_): _description_
+            xx (_type_): _description_
+            yy (_type_): _description_
+            phenotype (_type_): _description_
+        """
         if phenotype not in self.known_phenotypes:
             self.known_phenotypes.append(phenotype)
         if sample not in self.samples.keys():
