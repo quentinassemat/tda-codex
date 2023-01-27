@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Raw data that is too big to store on GitHub
+data/raw/
